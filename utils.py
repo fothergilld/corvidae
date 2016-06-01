@@ -7,10 +7,20 @@ from oauth2client.tools import run_flow, argparser
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 import pandas as pd
+import numpy as np
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import exc
 
 from config import Config
 
 config = Config()
+db_connector = 'mysql://%s:%s@localhost/%s' % (config.DB_USER, config.DB_PSW,config.DB_NAME)
+engine = create_engine(db_connector)
+
+# create a configured "Session" class
+Session = sessionmaker(bind=engine)
+session = Session()
 
 class AuthenticationHandler(object):
     flow = flow_from_clientsecrets(
@@ -40,16 +50,33 @@ class AuthenticationHandler(object):
         credentials_auth = cls.credentials.authorize(httplib2.Http())
         return build('webmasters', 'v3', http=credentials_auth)
 
-def GaDataTidy(data_object):
+def GaDataTidy(data_object,client_name,ga_profile_id):
     rows = data_object.get('rows')
     headers = data_object.get('columnHeaders')
     heads = []
     for i in range(0,len(headers)):
          heads.append(headers[i]['name'])
-
-    #put GA data into dataframe
+    # put GA data into dataframe
     df = pd.DataFrame(rows,columns=heads)
+    df['client_name']  = client_name
+    df['ga_id']  = ga_profile_id
+    # match column names to destination db field names
+    df.rename(columns={'ga:date': 'date','ga:sessions': 'sessions','ga:medium': 'medium',\
+            'ga:transactions': 'transactions','ga:transactionRevenue': 'revenue',\
+            'ga:goal1Completions': 'goalCompletions1'}, inplace=True)
+    df.replace(r'\s+',np.nan,regex=True).replace('',np.nan)
     return df
-    #convert sessions column to numeric format
-    #df['sessions'] = pd.to_numeric(df['ga:sessions'])
-    #df['client']  = profile_name
+
+class DbHelpers(object):
+
+    @staticmethod
+    def insert_or_update(model, data):
+        for row in data:
+            instance = model(**row)
+            session.add(instance)
+            try:
+                session.commit()
+            except exc.IntegrityError as e:
+                #import ipdb; ipdb.set_trace()
+                if e.orig.args[0] == 1062:
+                    session.rollback()
