@@ -14,7 +14,7 @@ def main():
 
 	for profile in config.GA_PROFILES:
 	 	ga_profile = 'ga:' + profile[1]
-	 	historic_data = ga_daily_channel_data(service,ga_profile,config.START_DATE.strftime('%Y-%m-%d')\
+	 	historic_data = ga_monthly_channel_data(service,ga_profile,config.START_DATE.strftime('%Y-%m-%d')\
 	 	,config.END_DATE.strftime('%Y-%m-%d')).execute()
 
 		formatted_dataframe = GaDataTidy(historic_data,profile[0],profile[1])
@@ -40,7 +40,7 @@ def get_profile_ids(service):
 		accounts.append(account_detail)
 	return accounts
 
-def ga_daily_channel_data(service, profile, start_date, end_date,segment=None):
+def ga_monthly_channel_data(service, profile, start_date, end_date,segment=None):
   """Returns a query object to retrieve data from the Core Reporting API.
 
   Args:
@@ -52,7 +52,7 @@ def ga_daily_channel_data(service, profile, start_date, end_date,segment=None):
       start_date=start_date,
       end_date=end_date,
       metrics='ga:sessions,ga:transactions,ga:transactionRevenue,ga:goal1Completions',
-      dimensions='ga:date,ga:medium',
+      dimensions='ga:yearMonth,ga:medium',
       #sort='ga:visits',
       filters='ga:medium==organic',
       segment=segment,

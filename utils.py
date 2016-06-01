@@ -61,9 +61,10 @@ def GaDataTidy(data_object,client_name,ga_profile_id):
     df['client_name']  = client_name
     df['ga_id']  = ga_profile_id
     # match column names to destination db field names
-    df.rename(columns={'ga:date': 'date','ga:sessions': 'sessions','ga:medium': 'medium',\
+    df.rename(columns={'ga:yearMonth': 'date','ga:sessions': 'sessions','ga:medium': 'medium',\
             'ga:transactions': 'transactions','ga:transactionRevenue': 'revenue',\
             'ga:goal1Completions': 'goalCompletions1'}, inplace=True)
+    df['date'] = pd.to_datetime(df['date'],format="%Y%m")
     df.replace(r'\s+',np.nan,regex=True).replace('',np.nan)
     return df
 
@@ -80,3 +81,4 @@ class DbHelpers(object):
                 #import ipdb; ipdb.set_trace()
                 if e.orig.args[0] == 1062:
                     session.rollback()
+        session.close()
