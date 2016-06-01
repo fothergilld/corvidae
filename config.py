@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import datetime
 
@@ -22,3 +23,9 @@ class Config:
     START_DATE = current_date + relativedelta(day=1, months=-12)
     # last day of the previous month
     END_DATE = current_date + relativedelta(day=1, days=-1)
+
+    DB_NAME = 'corvidae_db'
+    DB_GA_TABLE = 'ga_data'
+    DB_FORECAST_TABLE = 'forecast_data'  
+    DB_USER = os.environ['CORVIDAE_DB_USER']
+    DB_PSW = os.environ['CORVIDAE_PSW']

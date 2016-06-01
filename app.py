@@ -1,25 +1,26 @@
 import sys
 
-from utils import AuthenticationHandler,GaDataTidy #, DbHelpers
-from config import Config
 from sqlalchemy import create_engine
+
+from utils import AuthenticationHandler,GaDataTidy, DbHelpers
+from config import Config
+from models import GaData
 
 config = Config()
 
 def main():
-	disk_engine = create_engine('sqlite:///ga_daily_channel.db')
 	service = AuthenticationHandler.ga_service_build()
 	accounts = get_profile_ids(service)
 
-	#import ipdb; ipdb.set_trace()
 	for profile in config.GA_PROFILES:
 	 	ga_profile = 'ga:' + profile[1]
 	 	historic_data = ga_daily_channel_data(service,ga_profile,config.START_DATE.strftime('%Y-%m-%d')\
 	 	,config.END_DATE.strftime('%Y-%m-%d')).execute()
 
-	tidy = GaDataTidy(historic_data)
-	import ipdb; ipdb.set_trace()
-	tidy.to_sql('data', disk_engine, if_exists='append')
+		formatted_dataframe = GaDataTidy(historic_data,profile[0],profile[1])
+		df_as_dicts = formatted_dataframe.T.to_dict().values()
+		DbHelpers.insert_or_update(GaData, df_as_dicts)
+		
 
 def get_profile_ids(service):
 	"""Uses Management API to get available Profile IDS for the current user
@@ -50,7 +51,7 @@ def ga_daily_channel_data(service, profile, start_date, end_date,segment=None):
       ids=profile,
       start_date=start_date,
       end_date=end_date,
-      metrics='ga:sessions,ga:transactions,ga:transactionRevenue',
+      metrics='ga:sessions,ga:transactions,ga:transactionRevenue,ga:goal1Completions',
       dimensions='ga:date,ga:medium',
       #sort='ga:visits',
       filters='ga:medium==organic',
