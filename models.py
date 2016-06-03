@@ -1,7 +1,7 @@
 import os
 import sys
 
-from sqlalchemy import Column, Integer, String, Float, Date, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, Date, UniqueConstraint, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -34,6 +34,14 @@ class GaData(Base):
     goalCompletions1 = Column(Integer, nullable=False)
 
     __table_args__ = (UniqueConstraint('ga_id', 'client_name', 'date','medium', name='_client_month_uc'),)
+
+    @staticmethod
+    def update(row):
+        session.query(GaData).\
+            filter(and_(GaData.ga_id == row['ga_id'],GaData.client_name == row['client_name'],\
+            GaData.date == row['date'],GaData.medium == row['medium'])).\
+        print 'updated row'
+        session.commit()
 
 class ForecastData(Base):
     __tablename__ = config.DB_FORECAST_TABLE

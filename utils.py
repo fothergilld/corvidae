@@ -81,4 +81,6 @@ class DbHelpers(object):
                 #import ipdb; ipdb.set_trace()
                 if e.orig.args[0] == 1062:
                     session.rollback()
+                    model.update(row)
         session.close()
+
