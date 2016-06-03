@@ -40,7 +40,6 @@ class GaData(Base):
         session.query(GaData).\
             filter(and_(GaData.ga_id == row['ga_id'],GaData.client_name == row['client_name'],\
             GaData.date == row['date'],GaData.medium == row['medium'])).\
-        print 'updated row'
         session.commit()
 
 class ForecastData(Base):

@@ -20,7 +20,7 @@ class Config:
     # dates should be in the format of YYYY-MM-DD
     current_date = datetime.date.today()
     # first day of the previous month
-    START_DATE = current_date + relativedelta(day=1, months=-12)
+    START_DATE = current_date + relativedelta(day=1, months=-48)
     # last day of the previous month
     END_DATE = current_date + relativedelta(day=1, days=-1)
 
