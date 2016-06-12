@@ -1,14 +1,16 @@
 import sys
 import os
+from dateutil.relativedelta import relativedelta
 
 import csv
-#import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-#import statsmodels.api as sm
+import readline
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
 
+from models import ForecastData
+from utils import DbHelpers
 import r_holtwinters_forecast
 from config import Config
 
@@ -43,9 +45,19 @@ def main(client_name):
 	lower_bounds = pandas2ri.ri2py(results[0][5])
 	upper_bounds = pandas2ri.ri2py(results[0][4])
 
-	data_frame = pd.concat([pd.DataFrame(upper_bounds,columns=['upper_85','upper_90'])\
-		,pd.DataFrame(lower_bounds,columns=['lower_85','lower_90'])],axis=1)
-	data_frame['mean'] = mean
+	data_frame = pd.concat([pd.DataFrame(upper_bounds,columns=['sessions_upper_85','sessions_upper_95'])\
+		,pd.DataFrame(lower_bounds,columns=['sessions_lower_85','sessions_lower_95'])],axis=1)
+
+	first_fcast_date = df.date.max() +  relativedelta(months=1)
+	date_range = pd.date_range(first_fcast_date, periods=24, freq='M')
+	data_frame['date'] = date_range
+	data_frame['medium'] = 'organic'
+	data_frame['sessions_mean'] = mean
+	data_frame['ga_id'] = df['ga_id']
+	data_frame['client_name'] = df['client_name']
+	df_as_dicts = data_frame.T.to_dict().values()
+	DbHelpers.insert_or_update(ForecastData, df_as_dicts)
+
 
 if __name__ == '__main__':
   main('TRU')
