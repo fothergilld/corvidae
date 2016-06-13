@@ -15,7 +15,6 @@ import r_holtwinters_forecast
 from config import Config
 
 config = Config()
-#pandas2ri.activate()
 
 def main(client_name):
 	"""
@@ -34,7 +33,8 @@ def main(client_name):
 	"""
 
 	db_connection = 'mysql://%s:%s@localhost/%s' % (config.DB_USER, config.DB_PSW,config.DB_NAME)
-	df = pd.read_sql(config.DB_GA_TABLE,db_connection)
+	sql_query = 'select * from %s where client_name = "%s"' % (config.DB_GA_TABLE, client_name)
+	df = pd.read_sql(sql_query,db_connection)
 	
 	start_date = df.date.min().strftime('%Y-%m-%d') #'2015-06-01'
 	historic_sessions = df['sessions'].tolist()
@@ -60,4 +60,4 @@ def main(client_name):
 
 
 if __name__ == '__main__':
-  main('TRU')
+  main('test')
