@@ -60,7 +60,6 @@ def GaDataTidy(data_object,client_name,ga_profile_id):
     df = pd.DataFrame(rows,columns=heads)
     df['client_name']  = client_name
     df['ga_id']  = ga_profile_id
-    # match column names to destination db field names
     df.rename(columns={'ga:yearMonth': 'date','ga:sessions': 'sessions','ga:medium': 'medium',\
             'ga:transactions': 'transactions','ga:transactionRevenue': 'revenue',\
             'ga:goal1Completions': 'goalCompletions1'}, inplace=True)
