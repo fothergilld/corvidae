@@ -78,7 +78,6 @@ class DbHelpers(object):
             try:
                 session.commit()
             except exc.IntegrityError as e:
-                #import ipdb; ipdb.set_trace()
                 if e.orig.args[0] == 1062:
                     session.rollback()
                     model.update(row)
