@@ -1,6 +1,9 @@
 import sys
 import os
+import argparse
 from dateutil.relativedelta import relativedelta
+
+import logging
 
 import csv
 import numpy as np
@@ -16,7 +19,7 @@ from config import Config
 
 config = Config()
 
-def main(client_name, medium, metric):
+def main(args):
 	"""
 	Loads data from local DB and creates forecast using Holt Winters method.  The HW \
 	   method is implemented in R.
@@ -34,14 +37,20 @@ def main(client_name, medium, metric):
 		- completions (integer)
 	"""
 
+	logging.basicConfig(filename=config.LOG_FILE,level=logging.DEBUG,\
+						format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
 	db_connection = 'mysql://%s:%s@localhost/%s' % (config.DB_USER, config.DB_PSW,config.DB_NAME)
-<<<<<<< HEAD
-	sql_query = 'select * from %s where client_name = "%s"' % (config.DB_GA_TABLE,client_name)
+	sql_query = 'select * from %s where client_name = "%s"' % (config.DB_GA_TABLE,args.client_name)
 	df = pd.read_sql(sql_query,db_connection)
 
-	if len(df) > 0:	
+	if len(df) == 0:
+		logging.warning('No data in DB for parameters {},{},{}'.format(args.client_name,\
+																args.metric, args.medium)) 
+		return
+	else:	
 		start_date = df.date.min().strftime('%Y-%m-%d')
-		historic_metric_data = df[metric].tolist()
+		historic_metric_data = df[args.metric].tolist()
 		#historic_revenue = df['revenue'].astype('float').tolist()
 
 		results = r_holtwinters_forecast.main(historic_metric_data,start_date)
@@ -55,43 +64,23 @@ def main(client_name, medium, metric):
 		first_fcast_date = df.date.max() +  relativedelta(months=1)
 		date_range = pd.date_range(first_fcast_date, periods=24, freq='M')
 		data_frame['date'] = date_range
-		data_frame['medium'] = medium
+		data_frame['medium'] = args.medium
 		data_frame['mean'] = mean
 		data_frame['ga_id'] = df['ga_id']
 		data_frame['client_name'] = df['client_name']
 		df_as_dicts = data_frame.T.to_dict().values()
 		DbHelpers.insert_or_update(ForecastData, df_as_dicts)
 
-
-if __name__ == '__main__':
-  main('TRU','organic','sessions')
-=======
-	sql_query = 'select * from %s where client_name = "%s"' % (config.DB_GA_TABLE, client_name)
-	df = pd.read_sql(sql_query,db_connection)
-	
-	start_date = df.date.min().strftime('%Y-%m-%d') #'2015-06-01'
-	historic_sessions = df['sessions'].tolist()
-	historic_revenue = df['revenue'].astype('float').tolist()
-
-	results = r_holtwinters_forecast.main(historic_sessions,start_date)
-	mean = pandas2ri.ri2py(results[0][1])
-	lower_bounds = pandas2ri.ri2py(results[0][5])
-	upper_bounds = pandas2ri.ri2py(results[0][4])
-
-	data_frame = pd.concat([pd.DataFrame(upper_bounds,columns=['sessions_upper_85','sessions_upper_95'])\
-		,pd.DataFrame(lower_bounds,columns=['sessions_lower_85','sessions_lower_95'])],axis=1)
-
-	first_fcast_date = df.date.max() +  relativedelta(months=1)
-	date_range = pd.date_range(first_fcast_date, periods=24, freq='M')
-	data_frame['date'] = date_range
-	data_frame['medium'] = 'organic'
-	data_frame['sessions_mean'] = mean
-	data_frame['ga_id'] = df['ga_id']
-	data_frame['client_name'] = df['client_name']
-	df_as_dicts = data_frame.T.to_dict().values()
-	DbHelpers.insert_or_update(ForecastData, df_as_dicts)
+		logging.info('Created {} period forecast using {} historic data points for parameters {},{},{}'.format(len(data_frame),\
+											len(historic_metric_data), args.client_name,args.metric, args.medium)) 
 
 
 if __name__ == '__main__':
-  main('test')
->>>>>>> a6d858f803602a7c19946da23469c5e61ec2948c
+	parser = argparse.ArgumentParser()
+	parser.add_argument("client_name")
+	parser.add_argument("medium", choices=['organic', 'cpc'],\
+						help='medium as per the google analytics naming convention')
+	parser.add_argument("metric", choices=['sessions', 'revenue', 'transactions','goalCompletions1'],\
+						help='metric as per the google analytics naming convention')
+	args = parser.parse_args()
+	main(args)

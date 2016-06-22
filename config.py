@@ -29,3 +29,5 @@ class Config:
     DB_FORECAST_TABLE = 'forecast_data'  
     DB_USER = os.environ['CORVIDAE_DB_USER']
     DB_PSW = os.environ['CORVIDAE_PSW']
+
+    LOG_FILE = 'logs/fcast.log'
