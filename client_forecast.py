@@ -41,14 +41,15 @@ def main(args):
 						format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 	db_connection = 'mysql://%s:%s@localhost/%s' % (config.DB_USER, config.DB_PSW,config.DB_NAME)
-	sql_query = 'select * from %s where client_name = "%s"' % (config.DB_GA_TABLE,args.client_name)
+	sql_query = 'SELECT * FROM %s WHERE client_name = "%s" AND date <"%s"' % (config.DB_GA_TABLE,\
+																args.client_name,args.date_from)
 	df = pd.read_sql(sql_query,db_connection)
 
 	if len(df) == 0:
 		logging.warning('No data in DB for parameters {},{},{}'.format(args.client_name,\
 																args.metric, args.medium)) 
 		return
-	else:	
+	else:
 		start_date = df.date.min().strftime('%Y-%m-%d')
 		historic_metric_data = df[args.metric].tolist()
 		#historic_revenue = df['revenue'].astype('float').tolist()
@@ -62,7 +63,8 @@ def main(args):
 			,pd.DataFrame(lower_bounds,columns=['lower_85','lower_95'])],axis=1)
 
 		first_fcast_date = df.date.max() +  relativedelta(months=1)
-		date_range = pd.date_range(first_fcast_date, periods=24, freq='M')
+		date_range = pd.date_range(first_fcast_date, periods=24, freq='MS')
+		data_frame['fcast_start_date'] = args.date_from
 		data_frame['date'] = date_range
 		data_frame['medium'] = args.medium
 		data_frame['mean'] = mean
@@ -82,5 +84,6 @@ if __name__ == '__main__':
 						help='medium as per the google analytics naming convention')
 	parser.add_argument("metric", choices=['sessions', 'revenue', 'transactions','goalCompletions1'],\
 						help='metric as per the google analytics naming convention')
+	parser.add_argument("date_from", help='date from which to forecast from (format YYYY-MM-DD)')
 	args = parser.parse_args()
 	main(args)
