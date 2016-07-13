@@ -1,4 +1,7 @@
 import sys
+import argparse
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from sqlalchemy import create_engine
 
@@ -8,18 +11,20 @@ from models import GaData
 
 config = Config()
 
-def main():
+def main(args):
 	service = AuthenticationHandler.ga_service_build()
 	accounts = get_profile_ids(service)
 
-	for profile in config.GA_PROFILES:
-	 	ga_profile = 'ga:' + profile[1]
-	 	historic_data = ga_monthly_channel_data(service,ga_profile,config.START_DATE.strftime('%Y-%m-%d')\
-	 	,config.END_DATE.strftime('%Y-%m-%d')).execute()
+	ga_profile = 'ga:' + args.ga_id
 
-		formatted_dataframe = GaDataTidy(historic_data,profile[0],profile[1])
-		df_as_dicts = formatted_dataframe.T.to_dict().values()
-		DbHelpers.insert_or_update(GaData, df_as_dicts)
+	execution_date = datetime.strptime(args.execution_date, '%Y-%m-%d')
+	end_date = execution_date - relativedelta(days=1)
+	start_date = end_date - relativedelta(day=1)
+	historic_data = ga_monthly_channel_data(service,ga_profile,start_date.strftime('%Y-%m-%d')\
+														,end_date.strftime('%Y-%m-%d')).execute()
+	formatted_dataframe = GaDataTidy(historic_data,args.client_name,args.ga_id)
+	df_as_dicts = formatted_dataframe.T.to_dict().values()
+	DbHelpers.insert_or_update(GaData, df_as_dicts)
 		
 
 def get_profile_ids(service):
@@ -61,4 +66,11 @@ def ga_monthly_channel_data(service, profile, start_date, end_date,segment=None)
       max_results='10000')
 
 if __name__ == '__main__':
-  main()
+	parser = argparse.ArgumentParser()
+	parser.add_argument("client_name")
+	parser.add_argument("ga_id")
+	parser.add_argument("execution_date", help='Day on which report is being executed (format YYYY-MM-DD)')
+	parser.add_argument("report_period",choices=['LAST_MONTH'], help='choose from LAST_MONTH')
+
+	args = parser.parse_args()
+  	main(args)

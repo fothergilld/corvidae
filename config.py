@@ -6,8 +6,8 @@ from dateutil.relativedelta import relativedelta
 
 class Config:
     DEBUG = False
-    TESTING = False
-
+    USE_AWS = False
+    
     BASE_DIR = os.environ['SC_DIR']
     GA_CLIENT_SECRET = os.path.join(BASE_DIR, '_data_connectors/ga/client_secret.json')
     STORAGE_FILE = os.path.join(BASE_DIR, '_data_connectors/ga/storage.dat')
@@ -27,7 +27,14 @@ class Config:
     DB_NAME = 'corvidae_db'
     DB_GA_TABLE = 'ga_data'
     DB_FORECAST_TABLE = 'forecast_data'  
-    DB_USER = os.environ['CORVIDAE_DB_USER']
-    DB_PSW = os.environ['CORVIDAE_PSW']
+
+    if USE_AWS:
+        DB_USER = os.environ['CORVIDAE_AWS_USER']
+        DB_PSW = os.environ['CORVIDAE_AWS_PSW']
+        HOST_URL = 'corvidae-db.ciuleg8pnajz.eu-west-1.rds.amazonaws.com'
+    else:
+        DB_USER = os.environ['CORVIDAE_DB_USER']
+        DB_PSW = os.environ['CORVIDAE_PSW']
+        HOST_URL = 'localhost'
 
     LOG_FILE = 'logs/fcast.log'

@@ -10,7 +10,7 @@ from sqlalchemy import exc
 from config import Config
 
 config = Config()
-db_connector = 'mysql://%s:%s@localhost/%s' % (config.DB_USER, config.DB_PSW,config.DB_NAME)
+db_connector = 'mysql://%s:%s@%s/%s' % (config.DB_USER, config.DB_PSW,config.HOST_URL,config.DB_NAME)
 engine = create_engine(db_connector)
 
 # create a configured "Session" class
@@ -51,14 +51,14 @@ class ForecastData(Base):
     fcast_start_date = Column(Date, nullable=False)
     date = Column(Date, nullable=False)
     medium = Column(String(250), nullable=False)
+    metric = Column(String(250), nullable=False)
     mean = Column(Integer, nullable=False)
     lower_85 = Column(Integer, nullable=False)
     upper_85 = Column(Integer, nullable=False)
     lower_95 = Column(Integer, nullable=False)
     upper_95 = Column(Integer, nullable=False)
-    accuracy_mape = Column(Float)
 
-    __table_args__ = (UniqueConstraint('ga_id', 'client_name','fcast_start_date', 'date','medium', name='_client_month_uc'),)
+    __table_args__ = (UniqueConstraint('ga_id', 'client_name','fcast_start_date', 'date','medium','metric', name='_client_month_uc'),)
 
     @staticmethod
     def update(row):

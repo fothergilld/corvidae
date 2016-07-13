@@ -15,7 +15,7 @@ from sqlalchemy import exc
 from config import Config
 
 config = Config()
-db_connector = 'mysql://%s:%s@localhost/%s' % (config.DB_USER, config.DB_PSW,config.DB_NAME)
+db_connector = 'mysql://%s:%s@%s/%s' % (config.DB_USER, config.DB_PSW,config.HOST_URL,config.DB_NAME)
 engine = create_engine(db_connector)
 
 # create a configured "Session" class
@@ -60,9 +60,13 @@ def GaDataTidy(data_object,client_name,ga_profile_id):
     df = pd.DataFrame(rows,columns=heads)
     df['client_name']  = client_name
     df['ga_id']  = ga_profile_id
-    df.rename(columns={'ga:yearMonth': 'date','ga:sessions': 'sessions','ga:medium': 'medium',\
-            'ga:transactions': 'transactions','ga:transactionRevenue': 'revenue',\
-            'ga:goal1Completions': 'goalCompletions1'}, inplace=True)
+    df.rename(columns={'ga:yearMonth': 'date',
+                        'ga:sessions': 'sessions',
+                        'ga:medium': 'medium',
+                        'ga:transactions': 'transactions',
+                        'ga:transactionRevenue': 'revenue',
+                        'ga:goal1Completions': 'goalCompletions1'},
+                        inplace=True)
     df['date'] = pd.to_datetime(df['date'],format="%Y%m")
     df.replace(r'\s+',np.nan,regex=True).replace('',np.nan)
     return df

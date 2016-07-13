@@ -2,10 +2,9 @@ import sys
 import os
 import argparse
 from dateutil.relativedelta import relativedelta
-
 import logging
-
 import csv
+
 import numpy as np
 import pandas as pd
 import readline
@@ -14,20 +13,22 @@ from rpy2.robjects import pandas2ri
 
 from models import ForecastData
 from utils import DbHelpers
-import r_holtwinters_forecast
+import r_forecast
 from config import Config
 
 config = Config()
 
 def main(args):
 	"""
-	Loads data from local DB and creates forecast using Holt Winters method.  The HW \
+	Loads data from local DB and creates forecast using Holt Winters method.  The HW
 	   method is implemented in R.
 
 	Args:
 		client_name: The name as it exists in the store of Google Analytics data
 		medium: The medium for which to forecast 
 		metric: The metric for which to forecast
+		client_name: The client to produce a forecast for
+		date_from: The starting date to forecast from.  Used as a reference to identify the forecast points
 
 	Returns:
 		forecast_data: A pandas dataframe containing forecast data for 24 future periods, with the following columns:
@@ -40,21 +41,20 @@ def main(args):
 	logging.basicConfig(filename=config.LOG_FILE,level=logging.DEBUG,\
 						format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-	db_connection = 'mysql://%s:%s@localhost/%s' % (config.DB_USER, config.DB_PSW,config.DB_NAME)
-	sql_query = 'SELECT * FROM %s WHERE client_name = "%s" AND date <"%s"' % (config.DB_GA_TABLE,\
+	db_connection = 'mysql://%s:%s@%s/%s' % (config.DB_USER, config.DB_PSW,config.HOST_URL,config.DB_NAME)
+	sql_query = 'SELECT * FROM %s WHERE client_name = "%s" AND date <"%s" ORDER BY date asc' % (config.DB_GA_TABLE,\
 																args.client_name,args.date_from)
 	df = pd.read_sql(sql_query,db_connection)
 
-	if len(df) == 0:
-		logging.warning('No data in DB for parameters {},{},{}'.format(args.client_name,\
+	if len(df) < 12:
+		logging.warning('Not enough data in DB to run forecast for parameters {},{},{}'.format(args.client_name,\
 																args.metric, args.medium)) 
 		return
 	else:
 		start_date = df.date.min().strftime('%Y-%m-%d')
 		historic_metric_data = df[args.metric].tolist()
-		#historic_revenue = df['revenue'].astype('float').tolist()
 
-		results = r_holtwinters_forecast.main(historic_metric_data,start_date)
+		results = r_forecast.main(historic_metric_data,start_date)
 		mean = pandas2ri.ri2py(results[0][1])
 		lower_bounds = pandas2ri.ri2py(results[0][5])
 		upper_bounds = pandas2ri.ri2py(results[0][4])
@@ -67,6 +67,7 @@ def main(args):
 		data_frame['fcast_start_date'] = args.date_from
 		data_frame['date'] = date_range
 		data_frame['medium'] = args.medium
+		data_frame['metric'] = args.metric
 		data_frame['mean'] = mean
 		data_frame['ga_id'] = df['ga_id']
 		data_frame['client_name'] = df['client_name']
