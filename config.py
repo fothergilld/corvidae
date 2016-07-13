@@ -6,8 +6,8 @@ from dateutil.relativedelta import relativedelta
 
 class Config:
     DEBUG = False
-    USE_AWS = True
-
+    USE_AWS = False
+    
     BASE_DIR = os.environ['SC_DIR']
     GA_CLIENT_SECRET = os.path.join(BASE_DIR, '_data_connectors/ga/client_secret.json')
     STORAGE_FILE = os.path.join(BASE_DIR, '_data_connectors/ga/storage.dat')

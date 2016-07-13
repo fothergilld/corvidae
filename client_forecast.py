@@ -27,6 +27,8 @@ def main(args):
 		client_name: The name as it exists in the store of Google Analytics data
 		medium: The medium for which to forecast 
 		metric: The metric for which to forecast
+		client_name: The client to produce a forecast for
+		date_from: The starting date to forecast from.  Used as a reference to identify the forecast points
 
 	Returns:
 		forecast_data: A pandas dataframe containing forecast data for 24 future periods, with the following columns:
@@ -65,6 +67,7 @@ def main(args):
 		data_frame['fcast_start_date'] = args.date_from
 		data_frame['date'] = date_range
 		data_frame['medium'] = args.medium
+		data_frame['metric'] = args.metric
 		data_frame['mean'] = mean
 		data_frame['ga_id'] = df['ga_id']
 		data_frame['client_name'] = df['client_name']
