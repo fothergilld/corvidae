@@ -15,7 +15,7 @@ class Config:
     GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
     REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
-    GA_PROFILES = [('TRU','13292137')]
+    GA_PROFILES = [('name','1234567')]
 
     # dates should be in the format of YYYY-MM-DD
     current_date = datetime.date.today()
