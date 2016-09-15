@@ -1,6 +1,5 @@
 import argparse
 import httplib2
-import smtplib
 
 from apiclient.discovery import build
 from oauth2client.tools import run_flow, argparser
@@ -15,12 +14,13 @@ from sqlalchemy import exc
 from config import Config
 
 config = Config()
-db_connector = 'mysql://%s:%s@%s/%s' % (config.DB_USER, config.DB_PSW,config.HOST_URL,config.DB_NAME)
+db_connector = 'mysql://%s:%s@%s/%s' % (config.DB_USER, config.DB_PSW, config.HOST_URL, config.DB_NAME)
 engine = create_engine(db_connector)
 
 # create a configured "Session" class
 Session = sessionmaker(bind=engine)
 session = Session()
+
 
 class AuthenticationHandler(object):
     flow = flow_from_clientsecrets(
