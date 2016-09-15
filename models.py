@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import exc
 
+
 from config import Config
 
 config = Config()
@@ -67,6 +68,7 @@ class ForecastData(Base):
                         ForecastData.client_name == row['client_name'],
                         ForecastData.date == row['date'],
                         ForecastData.medium == row['medium'],
+                        ForecastData.metric == row['metric'],
                         ForecastData.fcast_start_date == row['fcast_start_date'])
                     ).update(row)
         session.commit()
