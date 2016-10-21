@@ -25,6 +25,7 @@ class Config:
     # last day of the previous month
     END_DATE = current_date + relativedelta(day=1, days=-1)
 
+    HOST_URL = 'localhost'
     DB_NAME = 'corvidae_db'
     DB_GA_TABLE = 'corvidae_ga_medium'
     DB_FORECAST_TABLE = 'corvidae_forecast'  
@@ -36,13 +37,12 @@ class Config:
     if USE_RADGE:
         DB_USER = os.environ['RADGE_DB_USER']
         DB_PSW = os.environ['RADGE_DB_PSW']
-        HOST_URL = os.environ['RADGE_DB_HOST']
+        
         DB_NAME = 'radgedb'
-        GA_CLIENT_SECRET = os.path.join(BASE_DIR, 'home/queryclick/apps/radge/ga/client_secrets.json')
-        STORAGE_FILE = os.path.join(BASE_DIR, 'home/queryclick/apps/radge/ga/analytics.dat')
+        GA_CLIENT_SECRET = os.path.join(BASE_DIR, '/home/queryclick/apps/radge/ga/client_secrets.json')
+        STORAGE_FILE = os.path.join(BASE_DIR, '/home/queryclick/apps/radge/ga/analytics.dat')
     else:
         DB_USER = os.environ['CORVIDAE_DB_USER']
         DB_PSW = os.environ['CORVIDAE_PSW']
-        HOST_URL = 'localhost'
 
     LOG_FILE = 'logs/fcast.log'

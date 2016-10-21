@@ -16,7 +16,7 @@ def main(args):
 
     execution_date = datetime.strptime(args.execution_date, '%Y-%m-%d')
     end_date = execution_date - relativedelta(days=1)
-    start_date = end_date - relativedelta(day=1)
+    start_date = end_date - relativedelta(day=1) - relativedelta(months=int(args.backfill))
     historic_data = ga_monthly_channel_data(service, ga_profile, start_date.strftime('%Y-%m-%d'),
                                             end_date.strftime('%Y-%m-%d')).execute()
     formatted_dataframe = GaDataTidy(historic_data, args.client_name, args.ga_id)
@@ -57,7 +57,7 @@ def ga_monthly_channel_data(service, profile, start_date, end_date, segment=None
         metrics='ga:sessions,ga:transactions,ga:transactionRevenue,ga:goal1Completions',
         dimensions='ga:yearMonth,ga:medium',
         #sort='ga:visits',
-        filters='ga:medium==organic,ga:medium==cpc',
+        #filters='ga:medium==organic,ga:medium==cpc',
         segment=segment,
         start_index='1',
         samplingLevel='HIGHER_PRECISION',
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     parser.add_argument("client_name")
     parser.add_argument("ga_id")
     parser.add_argument("execution_date", help='Day on which report is being executed (format YYYY-MM-DD)')
-    parser.add_argument("report_period", choices=['LAST_MONTH'], help='choose from LAST_MONTH')
+    parser.add_argument("--backfill","-B", default='0', help='Number of months to fill historically')
 
     args = parser.parse_args()
     main(args)
