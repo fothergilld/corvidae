@@ -6,7 +6,8 @@ from dateutil.relativedelta import relativedelta
 
 class Config:
     DEBUG = False
-    USE_AWS = True
+    USE_AWS = False
+    USE_RADGE = True
 
     BASE_DIR = os.environ['SC_DIR']
     GA_CLIENT_SECRET = os.path.join(BASE_DIR, '_data_connectors/ga/client_secret.json')
@@ -25,13 +26,20 @@ class Config:
     END_DATE = current_date + relativedelta(day=1, days=-1)
 
     DB_NAME = 'corvidae_db'
-    DB_GA_TABLE = 'ga_data'
-    DB_FORECAST_TABLE = 'forecast_data'  
+    DB_GA_TABLE = 'corvidae_ga_medium'
+    DB_FORECAST_TABLE = 'corvidae_forecast'  
 
     if USE_AWS:
         DB_USER = os.environ['CORVIDAE_AWS_USER']
         DB_PSW = os.environ['CORVIDAE_AWS_PSW']
         HOST_URL = 'corvidae-db.ciuleg8pnajz.eu-west-1.rds.amazonaws.com'
+    if USE_RADGE:
+        DB_USER = os.environ['RADGE_DB_USER']
+        DB_PSW = os.environ['RADGE_DB_PSW']
+        HOST_URL = os.environ['RADGE_DB_HOST']
+        DB_NAME = 'radgedb'
+        GA_CLIENT_SECRET = os.path.join(BASE_DIR, 'home/queryclick/apps/radge/ga/client_secrets.json')
+        STORAGE_FILE = os.path.join(BASE_DIR, 'home/queryclick/apps/radge/ga/analytics.dat')
     else:
         DB_USER = os.environ['CORVIDAE_DB_USER']
         DB_PSW = os.environ['CORVIDAE_PSW']
