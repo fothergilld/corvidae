@@ -75,8 +75,8 @@ def main(args):
     data_frame['medium'] = args.medium
     data_frame['metric'] = args.metric
     data_frame['mean'] = mean
-    data_frame['ga_id'] = df['ga_id']
-    data_frame['client_name'] = df['client_name']
+    data_frame['ga_id'] = df['ga_id'][0]
+    data_frame['client_name'] = args.client_name
     df_as_dicts = data_frame.T.to_dict().values()
     DbHelpers.insert_or_update(ForecastData, df_as_dicts)
 
